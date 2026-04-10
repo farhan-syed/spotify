@@ -1,0 +1,92 @@
+[
+  {
+    "title": "BROKEN",
+    "artist": "dreem",
+    "year": 2018,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_BROKEN - dreem.wav"
+  },
+  {
+    "title": "Chrome Dreams",
+    "artist": "Ben Elson",
+    "year": 2019,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_Chrome Dreams - Ben Elson.wav"
+  },
+  {
+    "title": "Cyberline",
+    "artist": "Ben Elson",
+    "year": 2020,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_Cyberline - Ben Elson.wav"
+  },
+  {
+    "title": "Forgotten",
+    "artist": "AGST",
+    "year": 2021,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_Forgotten - AGST.wav"
+  },
+  {
+    "title": "Good Omen",
+    "artist": "Heyson",
+    "year": 2022,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_Good Omen - Heyson.wav"
+  },
+  {
+    "title": "Happy Mood",
+    "artist": "Sarah, the Illstrumentalist",
+    "year": 2023,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_Happy Mood - Sarah, the Illstrumentalist.wav"
+  },
+  {
+    "title": "Mount Kailash (Felix Johansson Carne Remix)",
+    "artist": "Aks \u0026 Lakshmi",
+    "year": 2024,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_Mount Kailash (Felix Johansson Carne Remix) - Aks \u0026 Lakshmi.wav"
+  },
+  {
+    "title": "Up Here Dub",
+    "artist": "Marcus Price",
+    "year": 2017,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_Up Here Dub - Marcus Price.wav"
+  },
+  {
+    "title": "Vapor",
+    "artist": "Ben Elson",
+    "year": 2025,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_Vapor - Ben Elson.wav"
+  },
+  {
+    "title": "ZERO",
+    "artist": "Lucas Pittman",
+    "year": 2016,
+    "genre": "Unknown",
+    "isFavorite": false,
+    "comments": "",
+    "filePath": "src/main/java/com/example/wav/ES_ZERO - Lucas Pittman.wav"
+  }
+]
