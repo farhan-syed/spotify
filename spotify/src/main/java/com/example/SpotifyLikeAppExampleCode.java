@@ -38,7 +38,7 @@ public class SpotifyLikeAppExampleCode {
     */
 
   private static String directoryPath =
-    "C:/Users/farhan/Desktop/JAVA CIS084/spotify/src/main/java/com";
+    "C:/Users/farhan/Desktop/JAVA_CIS084/spotify/src/main/java/com/example";
 
   // "main" makes this class a java app that can be executed
   public static void main(final String[] args) {
