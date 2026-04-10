@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
+import javazoom.jl.player.Player;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -19,6 +20,8 @@ public class App {
 
   // the current audio clip
   private static Clip audioClip;
+  private static Player mp3Player;
+  private static Thread mp3Thread;
   private static final int MAX_RECENT_SONGS = 5;
   private static final List<Song> recentSongs = new ArrayList<>();
 
@@ -110,12 +113,14 @@ public class App {
       return;
     }
 
-    // stop the current song from playing, before playing the next one
-    if (audioClip != null) {
-      audioClip.close();
-    }
+    stopCurrentPlayback();
 
     try {
+      if (filename.toLowerCase(Locale.ROOT).endsWith(".mp3")) {
+        playMp3(audioResource, selectedSong);
+        return;
+      }
+
       audioClip = AudioSystem.getClip();
       final AudioInputStream in = AudioSystem.getAudioInputStream(audioResource);
       audioClip.open(in);
@@ -125,6 +130,42 @@ public class App {
       System.out.printf("Now playing: %s - %s%n", selectedSong.name(), selectedSong.artist());
     } catch (Exception e) {
       e.printStackTrace();
+    }
+  }
+
+  public static void playMp3(URL audioResource, Song selectedSong) {
+    mp3Thread = new Thread(() -> {
+      try (InputStream audioStream = audioResource.openStream()) {
+        mp3Player = new Player(audioStream);
+        addRecentSong(selectedSong);
+        System.out.printf("Now playing: %s - %s%n", selectedSong.name(), selectedSong.artist());
+        mp3Player.play();
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        mp3Player = null;
+        mp3Thread = null;
+      }
+    });
+
+    mp3Thread.start();
+  }
+
+  public static void stopCurrentPlayback() {
+    if (audioClip != null) {
+      audioClip.stop();
+      audioClip.close();
+      audioClip = null;
+    }
+
+    if (mp3Player != null) {
+      mp3Player.close();
+      mp3Player = null;
+    }
+
+    if (mp3Thread != null) {
+      mp3Thread.interrupt();
+      mp3Thread = null;
     }
   }
 
@@ -185,9 +226,8 @@ public class App {
   }
 
   public static void stop() {
-    if (audioClip != null && audioClip.isRunning()) {
-      audioClip.stop();
-      audioClip.close();
+    if ((audioClip != null && audioClip.isRunning()) || mp3Player != null) {
+      stopCurrentPlayback();
       System.out.println("Playback stopped.");
       return;
     }
