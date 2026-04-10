@@ -44,15 +44,15 @@ public class App {
    * displays the menu for the app
    */
   public static void menu() {
+    System.out.println();
     System.out.println("---- SpotifyLikeApp ----");
     System.out.println("[H]ome");
     System.out.println("[S]earch by title");
     System.out.println("[L]ibrary");
     System.out.println("[P]lay");
     System.out.println("[Q]uit");
-
-    System.out.println("");
-    System.out.print("Enter q to Quit:");
+    System.out.println();
+    System.out.print("Choose an option (H/S/L/P/Q): ");
   }
 
   /*
@@ -136,6 +136,7 @@ public class App {
   public static void showHome(Song[] library) {
     System.out.println("-->Home<--");
     System.out.println("Welcome to SpotifyLikeApp");
+    System.out.println();
     System.out.println("Songs available:");
     printLibrary(library);
     System.out.println();
