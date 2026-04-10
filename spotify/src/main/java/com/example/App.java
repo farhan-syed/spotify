@@ -55,7 +55,7 @@ public class App {
     System.out.println("S[t]op");
     System.out.println("[Q]uit");
     System.out.println();
-    System.out.print("Choose an option (H/S/L/P/T/Q): ");
+    System.out.print("Choose a menu option: ");
   }
 
   /*
