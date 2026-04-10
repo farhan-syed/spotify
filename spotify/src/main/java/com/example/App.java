@@ -68,6 +68,7 @@ public class App {
         break;
       case "s":
         System.out.println("-->Search by title<--");
+        searchByTitle(library, input);
         break;
       case "l":
         System.out.println("-->Library<--");
@@ -164,6 +165,32 @@ public class App {
     } catch (NumberFormatException e) {
       System.out.println("Please enter a valid number.");
     }
+  }
+
+  public static void searchByTitle(Song[] library, Scanner input) {
+    if (library == null || library.length == 0) {
+      System.out.println("No songs were loaded from the library.");
+      return;
+    }
+
+    System.out.print("Enter the song title or part of the title: ");
+    String searchText = input.nextLine().trim().toLowerCase();
+
+    if (searchText.isEmpty()) {
+      System.out.println("Please enter a song title.");
+      return;
+    }
+
+    for (int i = 0; i < library.length; i++) {
+      Song song = library[i];
+      if (song.name().toLowerCase().contains(searchText)) {
+        System.out.printf("Found: %s - %s\n", song.name(), song.artist());
+        play(library, i);
+        return;
+      }
+    }
+
+    System.out.println("No matching song was found.");
   }
 
   public static void stop() {
