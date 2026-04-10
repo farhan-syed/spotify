@@ -61,7 +61,7 @@ public class App {
   public static void handleMenu(String userInput, Song[] library) {
     switch (userInput) {
       case "h":
-        System.out.println("-->Home<--");
+        showHome(library);
         break;
       case "s":
         System.out.println("-->Search by title<--");
@@ -131,6 +131,15 @@ public class App {
       Song song = library[i];
       System.out.printf("%d. %s - %s\n", i + 1, song.name(), song.artist());
     }
+  }
+
+  public static void showHome(Song[] library) {
+    System.out.println("-->Home<--");
+    System.out.println("Welcome to SpotifyLikeApp");
+    System.out.println("Songs available:");
+    printLibrary(library);
+    System.out.println();
+    System.out.println("Instructions: Press L to view the library and P to play a song.");
   }
 
   // read the audio library of music
