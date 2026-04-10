@@ -45,7 +45,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 
-// declares a class for the app
 public class App {
   private static final long SEEK_STEP_MICROSECONDS = 15_000_000L;
   private static final String TRACK_SETTINGS_RELATIVE_PATH =
@@ -55,7 +54,7 @@ public class App {
   private static final int DEFAULT_YEAR = 2020;
   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-  // the current audio clip
+  // Playback state
   private static Clip audioClip;
   private static AudioInputStream currentAudioStream;
   private static Player mp3Player;
@@ -65,6 +64,7 @@ public class App {
   private static long pausedPositionMicroseconds;
   private static final List<Song> recentSongs = new ArrayList<>();
 
+  // UI state
   private static Song[] library = new Song[0];
   private static final List<Song> displayedSongs = new ArrayList<>();
   private static JFrame frame;
@@ -72,7 +72,6 @@ public class App {
   private static CardLayout contentCardLayout;
   private static JList<String> songList;
   private static JList<String> homeRecentList;
-  private static JList<String> recentList;
   private static JTextField searchField;
   private static JButton pauseButton;
   private static JToggleButton favoriteButton;
@@ -84,7 +83,6 @@ public class App {
   private static JLabel metadataGenreLabel;
   private static JTextArea commentsArea;
 
-  // "main" makes this class a java app that can be executed
   public static void main(final String[] args) {
     Song[] loadedLibrary = readAudioLibrary();
 
@@ -96,9 +94,7 @@ public class App {
     SwingUtilities.invokeLater(App::createAndShowUi);
   }
 
-  /*
-   * creates the main window for the app
-   */
+  // Build the main Swing window and preload the default Home view.
   public static void createAndShowUi() {
     frame = new JFrame("MyMusicApp");
     frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -250,7 +246,6 @@ public class App {
 
     homeLabel = new JLabel();
     homeLabel.setVerticalAlignment(SwingConstants.TOP);
-    homeLabel.setBorder(BorderFactory.createTitledBorder("Home"));
     homeLabel.setBorder(
       BorderFactory.createCompoundBorder(
         BorderFactory.createTitledBorder("Home"),
@@ -525,9 +520,7 @@ public class App {
     play(selectedSong);
   }
 
-  /*
-   * plays an audio file
-   */
+  // Start playback for the selected song and update the UI state around it.
   public static void play(Song selectedSong) {
     if (selectedSong == null) {
       updateStatus("No song selected.", null);
@@ -606,7 +599,7 @@ public class App {
       try {
         currentAudioStream.close();
       } catch (Exception e) {
-        // ignore cleanup errors
+        // Cleanup should not block stopping playback.
       }
       currentAudioStream = null;
     }
@@ -965,7 +958,7 @@ public class App {
       .replace("\n", "<br>");
   }
 
-  // read the audio library of music
+  // Load the base audio library bundled with the app resources.
   public static Song[] readAudioLibrary() {
     final InputStream jsonStream = App.class.getResourceAsStream("/com/example/audio-library.json");
 

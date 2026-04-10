@@ -4,8 +4,8 @@
     "artist": "dreem",
     "year": 2018,
     "genre": "Unknown",
-    "isFavorite": false,
-    "comments": "",
+    "isFavorite": true,
+    "comments": "test comment",
     "filePath": "src/main/java/com/example/wav/ES_BROKEN - dreem.wav"
   },
   {
@@ -40,8 +40,8 @@
     "artist": "Heyson",
     "year": 2022,
     "genre": "Unknown",
-    "isFavorite": false,
-    "comments": "",
+    "isFavorite": true,
+    "comments": "Test comment",
     "filePath": "src/main/java/com/example/wav/ES_Good Omen - Heyson.wav"
   },
   {

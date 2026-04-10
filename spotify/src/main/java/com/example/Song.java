@@ -1,9 +1,12 @@
 package com.example;
 
 public class Song {
+  // Base library fields
   private String name;
   private String artist;
   private String fileName;
+
+  // Persisted track settings
   private String title;
   private int year;
   private String genre;
