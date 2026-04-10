@@ -33,7 +33,7 @@ public class App {
       userInput = userInput.toLowerCase();
 
       // do something
-      handleMenu(userInput, library);
+      handleMenu(userInput, library, input);
     }
 
     // close the scanner
@@ -58,7 +58,7 @@ public class App {
   /*
    * handles the user input for the app
    */
-  public static void handleMenu(String userInput, Song[] library) {
+  public static void handleMenu(String userInput, Song[] library, Scanner input) {
     switch (userInput) {
       case "h":
         showHome(library);
@@ -68,11 +68,11 @@ public class App {
         break;
       case "l":
         System.out.println("-->Library<--");
-        printLibrary(library);
+        libraryMenu(library, input);
         break;
       case "p":
         System.out.println("-->Play<--");
-        play(library);
+        play(library, 0);
         break;
       case "q":
         System.out.println("-->Quit<--");
@@ -85,15 +85,19 @@ public class App {
   /*
    * plays an audio file
    */
-  public static void play(Song[] library) {
+  public static void play(Song[] library, int songIndex) {
     if (library == null || library.length == 0) {
       System.out.println("No songs were loaded from the library.");
       return;
     }
 
-    // get the filePath and open a audio file
-    final Integer i = 3;
-    final String filename = library[i].fileName();
+    if (songIndex < 0 || songIndex >= library.length) {
+      System.out.println("Please choose a valid song number.");
+      return;
+    }
+
+    final Song selectedSong = library[songIndex];
+    final String filename = selectedSong.fileName();
     final URL audioResource = App.class.getResource("/com/example/wav/" + filename);
 
     if (audioResource == null) {
@@ -116,8 +120,29 @@ public class App {
       audioClip.open(in);
       audioClip.setMicrosecondPosition(0);
       audioClip.start();
+      System.out.printf("Now playing: %s - %s\n", selectedSong.name(), selectedSong.artist());
     } catch (Exception e) {
       e.printStackTrace();
+    }
+  }
+
+  public static void libraryMenu(Song[] library, Scanner input) {
+    if (library == null || library.length == 0) {
+      System.out.println("No songs were loaded from the library.");
+      return;
+    }
+
+    printLibrary(library);
+    System.out.println();
+    System.out.print("Enter a song number to play: ");
+
+    String choice = input.nextLine().trim();
+
+    try {
+      int songNumber = Integer.parseInt(choice);
+      play(library, songNumber - 1);
+    } catch (NumberFormatException e) {
+      System.out.println("Please enter a valid number.");
     }
   }
 
