@@ -1,12 +1,18 @@
-
-
 package com.example;
-import com.google.gson.*;
+
+import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import java.io.*;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.*;
-import javax.sound.sampled.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 
 // declares a class for the app
 public class App {
@@ -18,27 +24,17 @@ public class App {
 
   // "main" makes this class a java app that can be executed
   public static void main(final String[] args) {
-    // reading audio library from json file
     Song[] library = readAudioLibrary();
-
-    // create a scanner for user input
     Scanner input = new Scanner(System.in);
-
     String userInput = "";
+
     while (!userInput.equals("q")) {
       menu();
-
-      // get input
       userInput = input.nextLine();
-
-      // accept upper or lower case commands
-      userInput = userInput.toLowerCase();
-
-      // do something
+      userInput = userInput.trim().toLowerCase(Locale.ROOT);
       handleMenu(userInput, library, input);
     }
 
-    // close the scanner
     input.close();
   }
 
@@ -86,6 +82,7 @@ public class App {
         System.out.println("-->Quit<--");
         break;
       default:
+        System.out.println("Please choose a valid menu option.");
         break;
     }
   }
@@ -109,7 +106,7 @@ public class App {
     final URL audioResource = App.class.getResource("/com/example/wav/" + filename);
 
     if (audioResource == null) {
-      System.out.printf("ERROR: unable to find the audio file %s\n", filename);
+      System.out.printf("Unable to find the audio file %s.%n", filename);
       return;
     }
 
@@ -119,27 +116,21 @@ public class App {
     }
 
     try {
-      // create clip
       audioClip = AudioSystem.getClip();
-
-      // get input stream
       final AudioInputStream in = AudioSystem.getAudioInputStream(audioResource);
-
       audioClip.open(in);
       audioClip.setMicrosecondPosition(0);
       audioClip.start();
       addRecentSong(selectedSong);
-      System.out.printf("Now playing: %s - %s\n", selectedSong.name(), selectedSong.artist());
+      System.out.printf("Now playing: %s - %s%n", selectedSong.name(), selectedSong.artist());
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
   public static void addRecentSong(Song song) {
-    recentSongs.removeIf(
-      recentSong ->
-        recentSong.name().equals(song.name()) && recentSong.artist().equals(song.artist())
-    );
+    recentSongs.removeIf(recentSong ->
+      recentSong.name().equals(song.name()) && recentSong.artist().equals(song.artist()));
     recentSongs.add(0, song);
 
     if (recentSongs.size() > MAX_RECENT_SONGS) {
@@ -160,7 +151,7 @@ public class App {
     String choice = input.nextLine().trim();
 
     try {
-      int songNumber = Integer.parseInt(choice);
+      final int songNumber = Integer.parseInt(choice);
       play(library, songNumber - 1);
     } catch (NumberFormatException e) {
       System.out.println("Please enter a valid number.");
@@ -182,9 +173,9 @@ public class App {
     }
 
     for (int i = 0; i < library.length; i++) {
-      Song song = library[i];
+      final Song song = library[i];
       if (song.name().toLowerCase().contains(searchText)) {
-        System.out.printf("Found: %s - %s\n", song.name(), song.artist());
+        System.out.printf("Found: %s - %s%n", song.name(), song.artist());
         play(library, i);
         return;
       }
@@ -211,8 +202,8 @@ public class App {
     }
 
     for (int i = 0; i < library.length; i++) {
-      Song song = library[i];
-      System.out.printf("%d. %s - %s\n", i + 1, song.name(), song.artist());
+      final Song song = library[i];
+      System.out.printf("%d. %s - %s%n", i + 1, song.name(), song.artist());
     }
   }
 
@@ -226,8 +217,8 @@ public class App {
       System.out.println("No songs played yet.");
     } else {
       for (int i = 0; i < recentSongs.size(); i++) {
-        Song song = recentSongs.get(i);
-        System.out.printf("%d. %s - %s\n", i + 1, song.name(), song.artist());
+        final Song song = recentSongs.get(i);
+        System.out.printf("%d. %s - %s%n", i + 1, song.name(), song.artist());
       }
     }
 
@@ -237,26 +228,19 @@ public class App {
 
   // read the audio library of music
   public static Song[] readAudioLibrary() {
-    Song[] library = null;
-    final InputStream jsonStream =
-      App.class.getResourceAsStream("/com/example/audio-library.json");
+    final InputStream jsonStream = App.class.getResourceAsStream("/com/example/audio-library.json");
 
     if (jsonStream == null) {
-      System.out.println("ERROR: unable to find the audio-library.json resource");
-      System.out.println();
+      System.out.println("Unable to find the audio library.");
       return null;
     }
 
-    try (
-      InputStreamReader fileReader = new InputStreamReader(jsonStream);
-      JsonReader reader = new JsonReader(fileReader)
-    ) {
-      library = new Gson().fromJson(reader, Song[].class);
+    try (InputStreamReader fileReader = new InputStreamReader(jsonStream, StandardCharsets.UTF_8);
+         JsonReader reader = new JsonReader(fileReader)) {
+      return new Gson().fromJson(reader, Song[].class);
     } catch (Exception e) {
-      System.out.println("ERROR: unable to read the audio-library.json resource");
-      System.out.println();
+      System.out.println("Unable to read the audio library.");
+      return null;
     }
-
-    return library;
   }
 }
