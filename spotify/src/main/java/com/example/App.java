@@ -2,19 +2,37 @@ package com.example;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Scanner;
 import javazoom.jl.player.Player;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 // declares a class for the app
 public class App {
@@ -27,91 +45,256 @@ public class App {
   private static final int MAX_RECENT_SONGS = 5;
   private static final List<Song> recentSongs = new ArrayList<>();
 
+  private static Song[] library = new Song[0];
+  private static final List<Song> displayedSongs = new ArrayList<>();
+  private static JFrame frame;
+  private static JList<String> songList;
+  private static JList<String> recentList;
+  private static DefaultListModel<String> songListModel;
+  private static DefaultListModel<String> recentListModel;
+  private static JTextField searchField;
+  private static JLabel statusLabel;
+  private static JLabel homeLabel;
+
   // "main" makes this class a java app that can be executed
   public static void main(final String[] args) {
-    Song[] library = readAudioLibrary();
-    Scanner input = new Scanner(System.in);
-    String userInput = "";
+    Song[] loadedLibrary = readAudioLibrary();
 
-    while (!userInput.equals("q")) {
-      menu();
-      userInput = input.nextLine();
-      userInput = userInput.trim().toLowerCase(Locale.ROOT);
-      handleMenu(userInput, library, input);
+    if (loadedLibrary != null) {
+      library = loadedLibrary;
     }
 
-    input.close();
+    SwingUtilities.invokeLater(App::createAndShowUi);
   }
 
   /*
-   * displays the menu for the app
+   * creates the main window for the app
    */
-  public static void menu() {
-    System.out.println();
-    System.out.println("---- MyMusicApp ----");
-    System.out.println("[H]ome");
-    System.out.println("[S]earch by title");
-    System.out.println("[L]ibrary");
-    System.out.println("[P]lay");
-    System.out.println("S[t]op");
-    System.out.println("[Q]uit");
-    System.out.println();
-    System.out.print("Choose a menu option: ");
+  public static void createAndShowUi() {
+    frame = new JFrame("MyMusicApp");
+    frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+    frame.addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent e) {
+        quitApp();
+      }
+    });
+
+    frame.setLayout(new BorderLayout(10, 10));
+    frame.add(createHeaderPanel(), BorderLayout.NORTH);
+    frame.add(createContentPanel(), BorderLayout.CENTER);
+    frame.add(createSidePanel(), BorderLayout.EAST);
+
+    frame.getRootPane().setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+    frame.setSize(900, 500);
+    frame.setLocationRelativeTo(null);
+
+    refreshSongList(Arrays.asList(library));
+    refreshRecentSongs();
+    showHome();
+
+    if (library.length == 0) {
+      updateStatus("No songs were loaded from the audio library.");
+    }
+
+    frame.setVisible(true);
   }
 
-  /*
-   * handles the user input for the app
-   */
-  public static void handleMenu(String userInput, Song[] library, Scanner input) {
-    switch (userInput) {
-      case "h":
-        showHome(library);
-        break;
-      case "s":
-        System.out.println("-->Search by title<--");
-        searchByTitle(library, input);
-        break;
-      case "l":
-        System.out.println("-->Library<--");
-        libraryMenu(library, input);
-        break;
-      case "p":
-        System.out.println("-->Play<--");
-        play(library, 0);
-        break;
-      case "t":
-        System.out.println("-->Stop<--");
-        stop();
-        break;
-      case "q":
-        System.out.println("-->Quit<--");
-        break;
-      default:
-        System.out.println("Please choose a valid menu option.");
-        break;
+  public static JPanel createHeaderPanel() {
+    JPanel headerPanel = new JPanel(new BorderLayout(0, 10));
+
+    JLabel titleLabel = new JLabel("MyMusicApp", SwingConstants.CENTER);
+    titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+    headerPanel.add(titleLabel, BorderLayout.NORTH);
+    headerPanel.add(createButtonPanel(), BorderLayout.SOUTH);
+
+    return headerPanel;
+  }
+
+  public static JPanel createButtonPanel() {
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+
+    JButton homeButton = new JButton("Home");
+    JButton searchButton = new JButton("Search");
+    JButton libraryButton = new JButton("Library");
+    JButton playButton = new JButton("Play");
+    JButton stopButton = new JButton("Stop");
+    JButton quitButton = new JButton("Quit");
+
+    homeButton.addActionListener(event -> showHome());
+    searchButton.addActionListener(event -> searchSongs());
+    libraryButton.addActionListener(event -> showLibrary());
+    playButton.addActionListener(event -> playSelectedSong());
+    stopButton.addActionListener(event -> stop());
+    quitButton.addActionListener(event -> quitApp());
+
+    buttonPanel.add(homeButton);
+    buttonPanel.add(searchButton);
+    buttonPanel.add(libraryButton);
+    buttonPanel.add(playButton);
+    buttonPanel.add(stopButton);
+    buttonPanel.add(quitButton);
+
+    return buttonPanel;
+  }
+
+  public static JPanel createContentPanel() {
+    JPanel contentPanel = new JPanel(new BorderLayout(0, 10));
+    contentPanel.setBorder(BorderFactory.createTitledBorder("Songs"));
+
+    JPanel searchPanel = new JPanel(new BorderLayout(8, 0));
+    JLabel searchLabel = new JLabel("Search by title:");
+    searchField = new JTextField();
+
+    searchField.addActionListener(event -> searchSongs());
+
+    searchPanel.add(searchLabel, BorderLayout.WEST);
+    searchPanel.add(searchField, BorderLayout.CENTER);
+
+    songListModel = new DefaultListModel<>();
+    songList = new JList<>(songListModel);
+    songList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+    contentPanel.add(searchPanel, BorderLayout.NORTH);
+    contentPanel.add(new JScrollPane(songList), BorderLayout.CENTER);
+
+    return contentPanel;
+  }
+
+  public static JPanel createSidePanel() {
+    JPanel sidePanel = new JPanel(new BorderLayout(0, 10));
+    sidePanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+
+    homeLabel = new JLabel();
+    homeLabel.setVerticalAlignment(SwingConstants.TOP);
+    homeLabel.setBorder(BorderFactory.createTitledBorder("Home"));
+
+    recentListModel = new DefaultListModel<>();
+    recentList = new JList<>(recentListModel);
+    recentList.setFocusable(false);
+    JScrollPane recentScrollPane = new JScrollPane(recentList);
+    recentScrollPane.setBorder(BorderFactory.createTitledBorder("Recently Played"));
+
+    statusLabel = new JLabel("Ready");
+    statusLabel.setBorder(BorderFactory.createTitledBorder("Status"));
+
+    sidePanel.add(homeLabel, BorderLayout.NORTH);
+    sidePanel.add(recentScrollPane, BorderLayout.CENTER);
+    sidePanel.add(statusLabel, BorderLayout.SOUTH);
+
+    return sidePanel;
+  }
+
+  public static void showHome() {
+    homeLabel.setText(
+      "<html><b>Welcome to MyMusicApp</b><br><br>"
+        + "Use Library to show all songs.<br>"
+        + "Use Search to find a song by title.<br>"
+        + "Select a song, then press Play.<br>"
+        + "Press Stop to end playback.</html>");
+    refreshRecentSongs();
+    updateStatus("Home view ready.");
+  }
+
+  public static void showLibrary() {
+    refreshSongList(Arrays.asList(library));
+    homeLabel.setText(
+      "<html><b>Library</b><br><br>Select a song from the list and press Play.</html>");
+    updateStatus("Showing all songs.");
+  }
+
+  public static void searchSongs() {
+    if (library.length == 0) {
+      updateStatus("No songs were loaded from the library.");
+      return;
     }
+
+    String searchText = searchField.getText().trim().toLowerCase(Locale.ROOT);
+
+    if (searchText.isEmpty()) {
+      updateStatus("Enter a song title to search.");
+      return;
+    }
+
+    List<Song> matches = new ArrayList<>();
+
+    for (Song song : library) {
+      if (song.name().toLowerCase(Locale.ROOT).contains(searchText)) {
+        matches.add(song);
+      }
+    }
+
+    if (matches.isEmpty()) {
+      updateStatus("No matching song was found.");
+      return;
+    }
+
+    refreshSongList(matches);
+    songList.setSelectedIndex(0);
+    homeLabel.setText(
+      "<html><b>Search Results</b><br><br>Found "
+        + matches.size()
+        + " matching song(s).</html>");
+    updateStatus("Search results updated.");
+  }
+
+  public static void refreshSongList(List<Song> songs) {
+    displayedSongs.clear();
+    displayedSongs.addAll(songs);
+    songListModel.clear();
+
+    for (Song song : displayedSongs) {
+      songListModel.addElement(formatSong(song));
+    }
+  }
+
+  public static void refreshRecentSongs() {
+    if (recentListModel == null) {
+      return;
+    }
+
+    recentListModel.clear();
+
+    if (recentSongs.isEmpty()) {
+      recentListModel.addElement("No songs played yet.");
+      return;
+    }
+
+    for (Song song : recentSongs) {
+      recentListModel.addElement(formatSong(song));
+    }
+  }
+
+  public static void playSelectedSong() {
+    if (displayedSongs.isEmpty()) {
+      updateStatus("No songs are available to play.");
+      return;
+    }
+
+    int selectedIndex = songList.getSelectedIndex();
+
+    if (selectedIndex < 0 || selectedIndex >= displayedSongs.size()) {
+      updateStatus("Select a song from the list first.");
+      return;
+    }
+
+    play(displayedSongs.get(selectedIndex));
   }
 
   /*
    * plays an audio file
    */
-  public static void play(Song[] library, int songIndex) {
-    if (library == null || library.length == 0) {
-      System.out.println("No songs were loaded from the library.");
+  public static void play(Song selectedSong) {
+    if (selectedSong == null) {
+      updateStatus("No song selected.");
       return;
     }
 
-    if (songIndex < 0 || songIndex >= library.length) {
-      System.out.println("Please choose a valid song number.");
-      return;
-    }
-
-    final Song selectedSong = library[songIndex];
     final String filename = selectedSong.fileName();
     final URL audioResource = App.class.getResource("/com/example/wav/" + filename);
 
     if (audioResource == null) {
-      System.out.printf("Unable to find the audio file %s.%n", filename);
+      updateStatus("Unable to find the audio file " + filename + ".");
       return;
     }
 
@@ -129,8 +312,10 @@ public class App {
       audioClip.setMicrosecondPosition(0);
       audioClip.start();
       addRecentSong(selectedSong);
-      System.out.printf("Now playing: %s - %s%n", selectedSong.name(), selectedSong.artist());
+      refreshRecentSongs();
+      updateStatus("Now playing: " + formatSong(selectedSong));
     } catch (Exception e) {
+      updateStatus("Unable to play the selected audio file.");
       e.printStackTrace();
     }
   }
@@ -140,9 +325,14 @@ public class App {
       try (InputStream audioStream = audioResource.openStream()) {
         mp3Player = new Player(audioStream);
         addRecentSong(selectedSong);
-        System.out.printf("Now playing: %s - %s%n", selectedSong.name(), selectedSong.artist());
+        SwingUtilities.invokeLater(() -> {
+          refreshRecentSongs();
+          updateStatus("Now playing: " + formatSong(selectedSong));
+        });
         mp3Player.play();
       } catch (Exception e) {
+        SwingUtilities.invokeLater(() ->
+          updateStatus("Unable to play the selected audio file."));
         e.printStackTrace();
       } finally {
         mp3Player = null;
@@ -210,91 +400,41 @@ public class App {
     }
   }
 
-  public static void libraryMenu(Song[] library, Scanner input) {
-    if (library == null || library.length == 0) {
-      System.out.println("No songs were loaded from the library.");
-      return;
-    }
-
-    printLibrary(library);
-    System.out.println();
-    System.out.print("Enter a song number to play: ");
-
-    String choice = input.nextLine().trim();
-
-    try {
-      final int songNumber = Integer.parseInt(choice);
-      play(library, songNumber - 1);
-    } catch (NumberFormatException e) {
-      System.out.println("Please enter a valid number.");
-    }
-  }
-
-  public static void searchByTitle(Song[] library, Scanner input) {
-    if (library == null || library.length == 0) {
-      System.out.println("No songs were loaded from the library.");
-      return;
-    }
-
-    System.out.print("Enter the song title or part of the title: ");
-    String searchText = input.nextLine().trim().toLowerCase();
-
-    if (searchText.isEmpty()) {
-      System.out.println("Please enter a song title.");
-      return;
-    }
-
-    for (int i = 0; i < library.length; i++) {
-      final Song song = library[i];
-      if (song.name().toLowerCase().contains(searchText)) {
-        System.out.printf("Found: %s - %s%n", song.name(), song.artist());
-        play(library, i);
-        return;
-      }
-    }
-
-    System.out.println("No matching song was found.");
-  }
-
   public static void stop() {
     if ((audioClip != null && audioClip.isRunning()) || mp3Player != null) {
       stopCurrentPlayback();
-      System.out.println("Playback stopped.");
+      updateStatus("Playback stopped.");
       return;
     }
 
-    System.out.println("No song is currently playing.");
+    updateStatus("No song is currently playing.");
   }
 
-  public static void printLibrary(Song[] library) {
-    if (library == null || library.length == 0) {
-      System.out.println("No songs were loaded from the library.");
+  public static void quitApp() {
+    stopCurrentPlayback();
+
+    if (frame != null) {
+      frame.dispose();
+    }
+
+    System.exit(0);
+  }
+
+  public static void updateStatus(String message) {
+    if (statusLabel == null) {
       return;
     }
 
-    for (int i = 0; i < library.length; i++) {
-      final Song song = library[i];
-      System.out.printf("%d. %s - %s%n", i + 1, song.name(), song.artist());
+    if (SwingUtilities.isEventDispatchThread()) {
+      statusLabel.setText(message);
+      return;
     }
+
+    SwingUtilities.invokeLater(() -> statusLabel.setText(message));
   }
 
-  public static void showHome(Song[] library) {
-    System.out.println("-->Home<--");
-    System.out.println("Welcome to MyMusicApp");
-    System.out.println();
-    System.out.println("Recently played songs:");
-
-    if (recentSongs.isEmpty()) {
-      System.out.println("No songs played yet.");
-    } else {
-      for (int i = 0; i < recentSongs.size(); i++) {
-        final Song song = recentSongs.get(i);
-        System.out.printf("%d. %s - %s%n", i + 1, song.name(), song.artist());
-      }
-    }
-
-    System.out.println();
-    System.out.println("Instructions: Press L to view the library and P to play a song.");
+  public static String formatSong(Song song) {
+    return song.name() + " - " + song.artist();
   }
 
   // read the audio library of music
@@ -302,7 +442,6 @@ public class App {
     final InputStream jsonStream = App.class.getResourceAsStream("/com/example/audio-library.json");
 
     if (jsonStream == null) {
-      System.out.println("Unable to find the audio library.");
       return null;
     }
 
@@ -310,7 +449,6 @@ public class App {
          JsonReader reader = new JsonReader(fileReader)) {
       return new Gson().fromJson(reader, Song[].class);
     } catch (Exception e) {
-      System.out.println("Unable to read the audio library.");
       return null;
     }
   }
