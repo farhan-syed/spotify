@@ -32,6 +32,11 @@
       <version>2.13.2</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>javazoom</groupId>
+      <artifactId>jlayer</artifactId>
+      <version>1.0.1</version>
+    </dependency>
   </dependencies>
 
   <build>
