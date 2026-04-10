@@ -57,6 +57,7 @@ public class App {
   private static DefaultListModel<String> songListModel;
   private static DefaultListModel<String> recentListModel;
   private static JTextField searchField;
+  private static JButton pauseButton;
   private static JLabel statusLabel;
   private static JLabel homeLabel;
 
@@ -143,7 +144,7 @@ public class App {
 
     JButton backButton = new JButton("Back 15s");
     JButton playButton = new JButton("Play");
-    JButton pauseButton = new JButton("Pause");
+    pauseButton = new JButton("Pause");
     JButton forwardButton = new JButton("Forward 15s");
     JButton stopButton = new JButton("Stop");
 
@@ -326,6 +327,7 @@ public class App {
     currentSong = selectedSong;
     isPaused = false;
     pausedPositionMicroseconds = 0;
+    updatePauseButtonLabel();
 
     try {
       if (filename.toLowerCase(Locale.ROOT).endsWith(".mp3")) {
@@ -343,6 +345,7 @@ public class App {
       updateStatus("Now playing: " + formatSong(selectedSong));
     } catch (Exception e) {
       currentSong = null;
+      updatePauseButtonLabel();
       updateStatus("Unable to play the selected audio file.");
       e.printStackTrace();
     }
@@ -360,6 +363,7 @@ public class App {
         mp3Player.play();
       } catch (Exception e) {
         currentSong = null;
+        updatePauseButtonLabel();
         SwingUtilities.invokeLater(() ->
           updateStatus("Unable to play the selected audio file."));
         e.printStackTrace();
@@ -401,6 +405,7 @@ public class App {
     currentSong = null;
     isPaused = false;
     pausedPositionMicroseconds = 0;
+    updatePauseButtonLabel();
   }
 
   public static AudioInputStream createPlayableAudioStream(URL audioResource) throws Exception {
@@ -463,6 +468,7 @@ public class App {
       audioClip.setMicrosecondPosition(pausedPositionMicroseconds);
       audioClip.start();
       isPaused = false;
+      updatePauseButtonLabel();
       updateStatus("Resumed: " + formatSong(currentSong));
       return;
     }
@@ -470,6 +476,7 @@ public class App {
     pausedPositionMicroseconds = audioClip.getMicrosecondPosition();
     audioClip.stop();
     isPaused = true;
+    updatePauseButtonLabel();
     updateStatus("Paused: " + formatSong(currentSong));
   }
 
@@ -545,6 +552,21 @@ public class App {
 
   public static String formatSong(Song song) {
     return song.name() + " - " + song.artist();
+  }
+
+  public static void updatePauseButtonLabel() {
+    if (pauseButton == null) {
+      return;
+    }
+
+    String label = isPaused ? "Resume" : "Pause";
+
+    if (SwingUtilities.isEventDispatchThread()) {
+      pauseButton.setText(label);
+      return;
+    }
+
+    SwingUtilities.invokeLater(() -> pauseButton.setText(label));
   }
 
   public static String formatTime(long microseconds) {
