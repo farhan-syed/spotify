@@ -13,6 +13,8 @@ public class App {
 
   // the current audio clip
   private static Clip audioClip;
+  private static final int MAX_RECENT_SONGS = 5;
+  private static final List<Song> recentSongs = new ArrayList<>();
 
   // "main" makes this class a java app that can be executed
   public static void main(final String[] args) {
@@ -120,9 +122,22 @@ public class App {
       audioClip.open(in);
       audioClip.setMicrosecondPosition(0);
       audioClip.start();
+      addRecentSong(selectedSong);
       System.out.printf("Now playing: %s - %s\n", selectedSong.name(), selectedSong.artist());
     } catch (Exception e) {
       e.printStackTrace();
+    }
+  }
+
+  public static void addRecentSong(Song song) {
+    recentSongs.removeIf(
+      recentSong ->
+        recentSong.name().equals(song.name()) && recentSong.artist().equals(song.artist())
+    );
+    recentSongs.add(0, song);
+
+    if (recentSongs.size() > MAX_RECENT_SONGS) {
+      recentSongs.remove(recentSongs.size() - 1);
     }
   }
 
@@ -162,8 +177,17 @@ public class App {
     System.out.println("-->Home<--");
     System.out.println("Welcome to SpotifyLikeApp");
     System.out.println();
-    System.out.println("Songs available:");
-    printLibrary(library);
+    System.out.println("Recently played songs:");
+
+    if (recentSongs.isEmpty()) {
+      System.out.println("No songs played yet.");
+    } else {
+      for (int i = 0; i < recentSongs.size(); i++) {
+        Song song = recentSongs.get(i);
+        System.out.printf("%d. %s - %s\n", i + 1, song.name(), song.artist());
+      }
+    }
+
     System.out.println();
     System.out.println("Instructions: Press L to view the library and P to play a song.");
   }
