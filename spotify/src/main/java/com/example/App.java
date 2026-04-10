@@ -36,12 +36,16 @@ import javax.swing.WindowConstants;
 
 // declares a class for the app
 public class App {
+  private static final long SEEK_STEP_MICROSECONDS = 15_000_000L;
 
   // the current audio clip
   private static Clip audioClip;
   private static AudioInputStream currentAudioStream;
   private static Player mp3Player;
   private static Thread mp3Thread;
+  private static Song currentSong;
+  private static boolean isPaused;
+  private static long pausedPositionMicroseconds;
   private static final int MAX_RECENT_SONGS = 5;
   private static final List<Song> recentSongs = new ArrayList<>();
 
@@ -84,6 +88,7 @@ public class App {
     frame.add(createHeaderPanel(), BorderLayout.NORTH);
     frame.add(createContentPanel(), BorderLayout.CENTER);
     frame.add(createSidePanel(), BorderLayout.EAST);
+    frame.add(createMediaControlsPanel(), BorderLayout.SOUTH);
 
     frame.getRootPane().setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
     frame.setSize(900, 500);
@@ -117,25 +122,44 @@ public class App {
     JButton homeButton = new JButton("Home");
     JButton searchButton = new JButton("Search");
     JButton libraryButton = new JButton("Library");
-    JButton playButton = new JButton("Play");
-    JButton stopButton = new JButton("Stop");
     JButton quitButton = new JButton("Quit");
 
     homeButton.addActionListener(event -> showHome());
     searchButton.addActionListener(event -> searchSongs());
     libraryButton.addActionListener(event -> showLibrary());
-    playButton.addActionListener(event -> playSelectedSong());
-    stopButton.addActionListener(event -> stop());
     quitButton.addActionListener(event -> quitApp());
 
     buttonPanel.add(homeButton);
     buttonPanel.add(searchButton);
     buttonPanel.add(libraryButton);
-    buttonPanel.add(playButton);
-    buttonPanel.add(stopButton);
     buttonPanel.add(quitButton);
 
     return buttonPanel;
+  }
+
+  public static JPanel createMediaControlsPanel() {
+    JPanel mediaControlsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+    mediaControlsPanel.setBorder(BorderFactory.createTitledBorder("Media Controls"));
+
+    JButton backButton = new JButton("Back 15s");
+    JButton playButton = new JButton("Play");
+    JButton pauseButton = new JButton("Pause");
+    JButton forwardButton = new JButton("Forward 15s");
+    JButton stopButton = new JButton("Stop");
+
+    backButton.addActionListener(event -> skipBackward());
+    playButton.addActionListener(event -> playSelectedSong());
+    pauseButton.addActionListener(event -> pauseOrResume());
+    forwardButton.addActionListener(event -> skipForward());
+    stopButton.addActionListener(event -> stop());
+
+    mediaControlsPanel.add(backButton);
+    mediaControlsPanel.add(playButton);
+    mediaControlsPanel.add(pauseButton);
+    mediaControlsPanel.add(forwardButton);
+    mediaControlsPanel.add(stopButton);
+
+    return mediaControlsPanel;
   }
 
   public static JPanel createContentPanel() {
@@ -299,6 +323,9 @@ public class App {
     }
 
     stopCurrentPlayback();
+    currentSong = selectedSong;
+    isPaused = false;
+    pausedPositionMicroseconds = 0;
 
     try {
       if (filename.toLowerCase(Locale.ROOT).endsWith(".mp3")) {
@@ -315,6 +342,7 @@ public class App {
       refreshRecentSongs();
       updateStatus("Now playing: " + formatSong(selectedSong));
     } catch (Exception e) {
+      currentSong = null;
       updateStatus("Unable to play the selected audio file.");
       e.printStackTrace();
     }
@@ -331,6 +359,7 @@ public class App {
         });
         mp3Player.play();
       } catch (Exception e) {
+        currentSong = null;
         SwingUtilities.invokeLater(() ->
           updateStatus("Unable to play the selected audio file."));
         e.printStackTrace();
@@ -368,6 +397,10 @@ public class App {
       mp3Thread.interrupt();
       mp3Thread = null;
     }
+
+    currentSong = null;
+    isPaused = false;
+    pausedPositionMicroseconds = 0;
   }
 
   public static AudioInputStream createPlayableAudioStream(URL audioResource) throws Exception {
@@ -401,13 +434,90 @@ public class App {
   }
 
   public static void stop() {
-    if ((audioClip != null && audioClip.isRunning()) || mp3Player != null) {
+    if (audioClip != null || mp3Player != null || isPaused) {
       stopCurrentPlayback();
       updateStatus("Playback stopped.");
       return;
     }
 
     updateStatus("No song is currently playing.");
+  }
+
+  public static void pauseOrResume() {
+    if (currentSong == null) {
+      updateStatus("No song is currently playing.");
+      return;
+    }
+
+    if (currentSong.fileName().toLowerCase(Locale.ROOT).endsWith(".mp3")) {
+      updateStatus("Pause is available for WAV playback only.");
+      return;
+    }
+
+    if (audioClip == null) {
+      updateStatus("No song is currently playing.");
+      return;
+    }
+
+    if (isPaused) {
+      audioClip.setMicrosecondPosition(pausedPositionMicroseconds);
+      audioClip.start();
+      isPaused = false;
+      updateStatus("Resumed: " + formatSong(currentSong));
+      return;
+    }
+
+    pausedPositionMicroseconds = audioClip.getMicrosecondPosition();
+    audioClip.stop();
+    isPaused = true;
+    updateStatus("Paused: " + formatSong(currentSong));
+  }
+
+  public static void skipBackward() {
+    skipClipPosition(-SEEK_STEP_MICROSECONDS);
+  }
+
+  public static void skipForward() {
+    skipClipPosition(SEEK_STEP_MICROSECONDS);
+  }
+
+  public static void skipClipPosition(long offsetMicroseconds) {
+    if (currentSong == null) {
+      updateStatus("No song is currently playing.");
+      return;
+    }
+
+    if (currentSong.fileName().toLowerCase(Locale.ROOT).endsWith(".mp3")) {
+      updateStatus("Skipping is available for WAV playback only.");
+      return;
+    }
+
+    if (audioClip == null) {
+      updateStatus("No song is currently playing.");
+      return;
+    }
+
+    long clipLength = audioClip.getMicrosecondLength();
+    long currentPosition = isPaused
+      ? pausedPositionMicroseconds
+      : audioClip.getMicrosecondPosition();
+    long targetPosition = Math.max(0, Math.min(currentPosition + offsetMicroseconds, clipLength));
+
+    boolean wasRunning = audioClip.isRunning();
+    audioClip.stop();
+    audioClip.setMicrosecondPosition(targetPosition);
+
+    if (isPaused) {
+      pausedPositionMicroseconds = targetPosition;
+      updateStatus("Moved to " + formatTime(targetPosition) + " in " + formatSong(currentSong));
+      return;
+    }
+
+    if (wasRunning) {
+      audioClip.start();
+    }
+
+    updateStatus("Moved to " + formatTime(targetPosition) + " in " + formatSong(currentSong));
   }
 
   public static void quitApp() {
@@ -435,6 +545,13 @@ public class App {
 
   public static String formatSong(Song song) {
     return song.name() + " - " + song.artist();
+  }
+
+  public static String formatTime(long microseconds) {
+    long totalSeconds = microseconds / 1_000_000L;
+    long minutes = totalSeconds / 60;
+    long seconds = totalSeconds % 60;
+    return String.format("%d:%02d", minutes, seconds);
   }
 
   // read the audio library of music
