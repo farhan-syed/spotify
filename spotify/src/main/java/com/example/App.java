@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 import javazoom.jl.player.Player;
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -20,6 +21,7 @@ public class App {
 
   // the current audio clip
   private static Clip audioClip;
+  private static AudioInputStream currentAudioStream;
   private static Player mp3Player;
   private static Thread mp3Thread;
   private static final int MAX_RECENT_SONGS = 5;
@@ -122,8 +124,8 @@ public class App {
       }
 
       audioClip = AudioSystem.getClip();
-      final AudioInputStream in = AudioSystem.getAudioInputStream(audioResource);
-      audioClip.open(in);
+      currentAudioStream = createPlayableAudioStream(audioResource);
+      audioClip.open(currentAudioStream);
       audioClip.setMicrosecondPosition(0);
       audioClip.start();
       addRecentSong(selectedSong);
@@ -158,6 +160,15 @@ public class App {
       audioClip = null;
     }
 
+    if (currentAudioStream != null) {
+      try {
+        currentAudioStream.close();
+      } catch (Exception e) {
+        // ignore cleanup errors
+      }
+      currentAudioStream = null;
+    }
+
     if (mp3Player != null) {
       mp3Player.close();
       mp3Player = null;
@@ -167,6 +178,26 @@ public class App {
       mp3Thread.interrupt();
       mp3Thread = null;
     }
+  }
+
+  public static AudioInputStream createPlayableAudioStream(URL audioResource) throws Exception {
+    final AudioInputStream sourceStream = AudioSystem.getAudioInputStream(audioResource);
+    final AudioFormat sourceFormat = sourceStream.getFormat();
+
+    AudioFormat targetFormat = new AudioFormat(
+      AudioFormat.Encoding.PCM_SIGNED,
+      sourceFormat.getSampleRate(),
+      16,
+      sourceFormat.getChannels(),
+      sourceFormat.getChannels() * 2,
+      sourceFormat.getSampleRate(),
+      false);
+
+    if (AudioSystem.isConversionSupported(targetFormat, sourceFormat)) {
+      return AudioSystem.getAudioInputStream(targetFormat, sourceStream);
+    }
+
+    return sourceStream;
   }
 
   public static void addRecentSong(Song song) {
