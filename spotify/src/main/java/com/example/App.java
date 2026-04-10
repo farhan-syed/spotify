@@ -47,7 +47,7 @@ public class App {
    */
   public static void menu() {
     System.out.println();
-    System.out.println("---- SpotifyLikeApp ----");
+    System.out.println("---- MyMusicApp ----");
     System.out.println("[H]ome");
     System.out.println("[S]earch by title");
     System.out.println("[L]ibrary");
@@ -218,7 +218,7 @@ public class App {
 
   public static void showHome(Song[] library) {
     System.out.println("-->Home<--");
-    System.out.println("Welcome to SpotifyLikeApp");
+    System.out.println("Welcome to MyMusicApp");
     System.out.println();
     System.out.println("Recently played songs:");
 
@@ -251,7 +251,6 @@ public class App {
       InputStreamReader fileReader = new InputStreamReader(jsonStream);
       JsonReader reader = new JsonReader(fileReader)
     ) {
-      System.out.println("Reading the audio-library.json resource");
       library = new Gson().fromJson(reader, Song[].class);
     } catch (Exception e) {
       System.out.println("ERROR: unable to read the audio-library.json resource");
