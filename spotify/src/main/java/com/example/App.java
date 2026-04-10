@@ -52,9 +52,10 @@ public class App {
     System.out.println("[S]earch by title");
     System.out.println("[L]ibrary");
     System.out.println("[P]lay");
+    System.out.println("S[t]op");
     System.out.println("[Q]uit");
     System.out.println();
-    System.out.print("Choose an option (H/S/L/P/Q): ");
+    System.out.print("Choose an option (H/S/L/P/T/Q): ");
   }
 
   /*
@@ -75,6 +76,10 @@ public class App {
       case "p":
         System.out.println("-->Play<--");
         play(library, 0);
+        break;
+      case "t":
+        System.out.println("-->Stop<--");
+        stop();
         break;
       case "q":
         System.out.println("-->Quit<--");
@@ -159,6 +164,17 @@ public class App {
     } catch (NumberFormatException e) {
       System.out.println("Please enter a valid number.");
     }
+  }
+
+  public static void stop() {
+    if (audioClip != null && audioClip.isRunning()) {
+      audioClip.stop();
+      audioClip.close();
+      System.out.println("Playback stopped.");
+      return;
+    }
+
+    System.out.println("No song is currently playing.");
   }
 
   public static void printLibrary(Song[] library) {
