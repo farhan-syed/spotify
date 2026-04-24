@@ -141,16 +141,19 @@ public class App {
     JButton homeButton = new JButton("Home");
     JButton searchButton = new JButton("Search");
     JButton libraryButton = new JButton("Library");
+    JButton favoritesViewButton = new JButton("Favorites");
     JButton quitButton = new JButton("Quit");
 
     homeButton.addActionListener(event -> showHome());
     searchButton.addActionListener(event -> searchSongs());
     libraryButton.addActionListener(event -> showLibrary());
+    favoritesViewButton.addActionListener(event -> showFavorites());
     quitButton.addActionListener(event -> quitApp());
 
     buttonPanel.add(homeButton);
     buttonPanel.add(searchButton);
     buttonPanel.add(libraryButton);
+    buttonPanel.add(favoritesViewButton);
     buttonPanel.add(quitButton);
 
     return buttonPanel;
@@ -321,6 +324,28 @@ public class App {
     homeLabel.setText(
       "<html><b>Library</b><br><br>Select a song from the list and press Play.</html>");
     updateStatus("Showing all songs.", null);
+  }
+
+  public static void showFavorites() {
+    List<Song> favoriteSongs = new ArrayList<>();
+
+    for (Song song : library) {
+      if (song.isFavorite()) {
+        favoriteSongs.add(song);
+      }
+    }
+
+    contentCardLayout.show(contentPanel, "LIBRARY");
+    refreshSongList(favoriteSongs);
+    homeLabel.setText(
+      "<html><b>Favorites</b><br><br>Showing all favorited songs.</html>");
+
+    if (favoriteSongs.isEmpty()) {
+      updateStatus("No favorited songs found.", null);
+      return;
+    }
+
+    updateStatus("Showing favorited songs.", null);
   }
 
   public static void searchSongs() {

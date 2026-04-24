@@ -13,7 +13,7 @@
     "artist": "Ben Elson",
     "year": 2019,
     "genre": "Unknown",
-    "isFavorite": false,
+    "isFavorite": true,
     "comments": "",
     "filePath": "src/main/java/com/example/wav/ES_Chrome Dreams - Ben Elson.wav"
   },
