@@ -780,19 +780,21 @@ public class App {
       return;
     }
 
-    String labelText = "<html><b>Status:</b> " + escapeHtml(message);
+    StringBuilder labelBuilder = new StringBuilder();
+    labelBuilder.append("<html><b>Status:</b> ").append(escapeHtml(message));
 
     if (song != null) {
-      labelText +=
-        "<br><br><b>Title:</b> " + escapeHtml(song.title())
-          + "<br><b>Artist:</b> " + escapeHtml(song.artist())
-          + "<br><b>Year:</b> " + song.year()
-          + "<br><b>Genre:</b> " + escapeHtml(song.genre())
-          + "<br><b>Is Favorite:</b> " + song.isFavorite()
-          + "<br><b>File Path:</b> " + escapeHtml(song.filePath());
+      labelBuilder
+        .append("<br><br><b>Title:</b> ").append(escapeHtml(song.title()))
+        .append("<br><b>Artist:</b> ").append(escapeHtml(song.artist()))
+        .append("<br><b>Year:</b> ").append(song.year())
+        .append("<br><b>Genre:</b> ").append(escapeHtml(song.genre()))
+        .append("<br><b>Is Favorite:</b> ").append(song.isFavorite())
+        .append("<br><b>File Path:</b> ").append(escapeHtml(song.filePath()));
     }
 
-    labelText += "</html>";
+    labelBuilder.append("</html>");
+    final String labelText = labelBuilder.toString();
 
     if (SwingUtilities.isEventDispatchThread()) {
       statusLabel.setText(labelText);
