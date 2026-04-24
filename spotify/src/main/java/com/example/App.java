@@ -276,7 +276,7 @@ public class App {
     infoPanel.add(metadataTitleLabel);
     infoPanel.add(metadataArtistLabel);
 
-    JPanel fieldsPanel = new JPanel(new GridLayout(0, 1, 0, 4));
+    JPanel fieldsPanel = new JPanel(new GridLayout(0, 1, 0, 2));
     metadataYearLabel = new JLabel("Year: ");
     metadataGenreLabel = new JLabel("Genre: ");
     metadataFilePathLabel = new JLabel("File Path: ");
@@ -294,7 +294,7 @@ public class App {
     JButton saveMetadataButton = new JButton("Save Settings");
     saveMetadataButton.addActionListener(event -> saveSelectedSongSettings());
 
-    JPanel formPanel = new JPanel(new BorderLayout(0, 10));
+    JPanel formPanel = new JPanel(new BorderLayout(0, 4));
     formPanel.add(infoPanel, BorderLayout.NORTH);
     formPanel.add(fieldsPanel, BorderLayout.CENTER);
 
