@@ -81,6 +81,7 @@ public class App {
   private static JLabel metadataArtistLabel;
   private static JLabel metadataYearLabel;
   private static JLabel metadataGenreLabel;
+  private static JLabel metadataFilePathLabel;
   private static JTextArea commentsArea;
 
   public static void main(final String[] args) {
@@ -278,8 +279,10 @@ public class App {
     JPanel fieldsPanel = new JPanel(new GridLayout(0, 1, 0, 4));
     metadataYearLabel = new JLabel("Year: ");
     metadataGenreLabel = new JLabel("Genre: ");
+    metadataFilePathLabel = new JLabel("File Path: ");
     fieldsPanel.add(metadataYearLabel);
     fieldsPanel.add(metadataGenreLabel);
+    fieldsPanel.add(metadataFilePathLabel);
 
     commentsArea = new JTextArea(5, 20);
     commentsArea.setLineWrap(true);
@@ -451,6 +454,8 @@ public class App {
     metadataArtistLabel.setText("Artist: " + song.artist());
     metadataYearLabel.setText("Year: " + song.year());
     metadataGenreLabel.setText("Genre: " + song.genre());
+    metadataFilePathLabel.setText(
+      "<html>File Path: " + escapeHtml(song.filePath()) + "</html>");
     if (favoriteButton != null) {
       favoriteButton.setSelected(song.isFavorite());
       updateFavoriteButtonLabel();
@@ -463,6 +468,7 @@ public class App {
     metadataArtistLabel.setText("Artist: ");
     metadataYearLabel.setText("Year: ");
     metadataGenreLabel.setText("Genre: ");
+    metadataFilePathLabel.setText("File Path: ");
     if (favoriteButton != null) {
       favoriteButton.setSelected(false);
       updateFavoriteButtonLabel();
