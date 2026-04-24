@@ -242,7 +242,7 @@ public class App {
 
   public static JPanel createMetadataPanel() {
     JPanel metadataPanel = new JPanel(new BorderLayout(0, 10));
-    metadataPanel.setBorder(BorderFactory.createTitledBorder("Track Settings"));
+    metadataPanel.setBorder(BorderFactory.createTitledBorder("Now Playing"));
 
     JPanel infoPanel = new JPanel(new GridLayout(0, 1, 0, 4));
     metadataTitleLabel = new JLabel("Title: No song selected");
@@ -265,7 +265,7 @@ public class App {
     commentsScrollPane.setBorder(BorderFactory.createTitledBorder("Comments"));
     commentsScrollPane.setPreferredSize(new Dimension(340, 220));
 
-    JButton saveMetadataButton = new JButton("Save Settings");
+    JButton saveMetadataButton = new JButton("Save");
     saveMetadataButton.addActionListener(event -> saveSelectedSongSettings());
 
     JPanel formPanel = new JPanel(new BorderLayout(0, 4));
