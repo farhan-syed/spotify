@@ -46,7 +46,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 
 public class App {
-  private static final long SEEK_STEP_MICROSECONDS = 15_000_000L;
+  private static final long SEEK_STEP_MICROSECONDS = 5_000_000L;
   private static final String TRACK_SETTINGS_RELATIVE_PATH =
     "src/main/java/com/example/track-settings.json";
   private static final String AUDIO_RELATIVE_DIRECTORY = "src/main/java/com/example/wav/";
@@ -161,21 +161,21 @@ public class App {
     JPanel mediaControlsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
     mediaControlsPanel.setBorder(BorderFactory.createTitledBorder("Media Controls"));
 
-    JButton backButton = new JButton("Back 15s");
+    JButton rewindButton = new JButton("Rewind");
     JButton playButton = new JButton("Play");
     pauseButton = new JButton("Pause");
-    JButton forwardButton = new JButton("Forward 15s");
+    JButton forwardButton = new JButton("Forward");
     JButton stopButton = new JButton("Stop");
     favoriteButton = new JToggleButton("Favorite");
     favoriteButton.addActionListener(event -> toggleFavoriteForSelectedSong());
 
-    backButton.addActionListener(event -> skipBackward());
+    rewindButton.addActionListener(event -> skipBackward());
     playButton.addActionListener(event -> playSelectedSong());
     pauseButton.addActionListener(event -> pauseOrResume());
     forwardButton.addActionListener(event -> skipForward());
     stopButton.addActionListener(event -> stop());
 
-    mediaControlsPanel.add(backButton);
+    mediaControlsPanel.add(rewindButton);
     mediaControlsPanel.add(playButton);
     mediaControlsPanel.add(pauseButton);
     mediaControlsPanel.add(forwardButton);
