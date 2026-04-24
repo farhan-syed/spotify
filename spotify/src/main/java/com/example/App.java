@@ -780,14 +780,19 @@ public class App {
       return;
     }
 
-    String commentText = "No comments.";
-    if (song != null && song.comments() != null && !song.comments().isBlank()) {
-      commentText = escapeHtml(song.comments());
+    String labelText = "<html><b>Status:</b> " + escapeHtml(message);
+
+    if (song != null) {
+      labelText +=
+        "<br><br><b>Title:</b> " + escapeHtml(song.title())
+          + "<br><b>Artist:</b> " + escapeHtml(song.artist())
+          + "<br><b>Year:</b> " + song.year()
+          + "<br><b>Genre:</b> " + escapeHtml(song.genre())
+          + "<br><b>Is Favorite:</b> " + song.isFavorite()
+          + "<br><b>File Path:</b> " + escapeHtml(song.filePath());
     }
 
-    String labelText =
-      "<html><b>Status:</b> " + escapeHtml(message)
-        + "<br><b>Comments:</b> " + commentText + "</html>";
+    labelText += "</html>";
 
     if (SwingUtilities.isEventDispatchThread()) {
       statusLabel.setText(labelText);
