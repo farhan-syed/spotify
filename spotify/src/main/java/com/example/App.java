@@ -207,6 +207,7 @@ public class App {
     return mainPanel;
   }
 
+  // Home shows recent plays in the main area instead of the full library list.
   public static JPanel createHomeContentPanel() {
     JPanel homeContentPanel = new JPanel(new BorderLayout(0, 10));
     homeContentPanel.setBorder(BorderFactory.createTitledBorder("Recently Played Songs"));
@@ -240,6 +241,7 @@ public class App {
     return libraryContentPanel;
   }
 
+  // The lower panel shows the currently selected song details and editable comments.
   public static JPanel createMetadataPanel() {
     JPanel metadataPanel = new JPanel(new BorderLayout(0, 10));
     metadataPanel.setBorder(BorderFactory.createTitledBorder("Now Playing"));
@@ -365,6 +367,7 @@ public class App {
     }
   }
 
+  // Keep the Home view list in sync with the most recently played songs.
   public static void refreshHomeRecentSongs() {
     if (homeRecentList == null) {
       return;
@@ -742,7 +745,8 @@ public class App {
   }
 
   public static void updateStatus(String message, Song song) {
-    // No status panel is shown in the current UI layout.
+    // Status messages are currently not rendered in the UI, but the call sites are
+    // intentionally preserved so feedback can be restored in one place later.
   }
 
   public static String formatSong(Song song) {
@@ -803,18 +807,7 @@ public class App {
     return commentsText.trim();
   }
 
-  public static int parseYear(String yearText) {
-    if (yearText == null || yearText.isBlank()) {
-      return DEFAULT_YEAR;
-    }
-
-    try {
-      return Integer.parseInt(yearText.trim());
-    } catch (NumberFormatException e) {
-      return DEFAULT_YEAR;
-    }
-  }
-
+  // Apply defaults before merging any saved per-track settings from disk.
   public static void initializeTrackSettings() {
     for (Song song : library) {
       applyDefaultSettings(song);
