@@ -75,8 +75,6 @@ public class App {
   private static JTextField searchField;
   private static JButton pauseButton;
   private static JToggleButton favoriteButton;
-  private static JLabel statusLabel;
-  private static JLabel homeLabel;
   private static JLabel metadataTitleLabel;
   private static JLabel metadataArtistLabel;
   private static JLabel metadataYearLabel;
@@ -109,7 +107,6 @@ public class App {
     frame.setLayout(new BorderLayout(10, 10));
     frame.add(createHeaderPanel(), BorderLayout.NORTH);
     frame.add(createMainPanel(), BorderLayout.CENTER);
-    frame.add(createSidePanel(), BorderLayout.EAST);
     frame.add(createMediaControlsPanel(), BorderLayout.SOUTH);
 
     frame.getRootPane().setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -243,29 +240,6 @@ public class App {
     return libraryContentPanel;
   }
 
-  public static JPanel createSidePanel() {
-    JPanel sidePanel = new JPanel(new BorderLayout(0, 10));
-    sidePanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-    sidePanel.setPreferredSize(new Dimension(260, 0));
-
-    homeLabel = new JLabel();
-    homeLabel.setVerticalAlignment(SwingConstants.TOP);
-    homeLabel.setBorder(
-      BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder("Home"),
-        BorderFactory.createEmptyBorder(12, 12, 12, 12)));
-    homeLabel.setPreferredSize(new Dimension(240, 180));
-
-    statusLabel = new JLabel("Ready");
-    statusLabel.setBorder(BorderFactory.createTitledBorder("Now Playing"));
-    statusLabel.setPreferredSize(new Dimension(240, 90));
-
-    sidePanel.add(homeLabel, BorderLayout.NORTH);
-    sidePanel.add(statusLabel, BorderLayout.CENTER);
-
-    return sidePanel;
-  }
-
   public static JPanel createMetadataPanel() {
     JPanel metadataPanel = new JPanel(new BorderLayout(0, 10));
     metadataPanel.setBorder(BorderFactory.createTitledBorder("Track Settings"));
@@ -312,20 +286,12 @@ public class App {
   public static void showHome() {
     contentCardLayout.show(contentPanel, "HOME");
     refreshHomeRecentSongs();
-    homeLabel.setText(
-      "<html><b>Welcome to MyMusicApp</b><br><br>"
-        + "Recently played songs are shown in the main panel.<br>"
-        + "Use Library to show all songs.<br>"
-        + "Use Search to find a song by title.<br>"
-        + "Select a song, then press Play.</html>");
     updateStatus("Home view ready.", null);
   }
 
   public static void showLibrary() {
     contentCardLayout.show(contentPanel, "LIBRARY");
     refreshSongList(Arrays.asList(library));
-    homeLabel.setText(
-      "<html><b>Library</b><br><br>Select a song from the list and press Play.</html>");
     updateStatus("Showing all songs.", null);
   }
 
@@ -340,8 +306,6 @@ public class App {
 
     contentCardLayout.show(contentPanel, "LIBRARY");
     refreshSongList(favoriteSongs);
-    homeLabel.setText(
-      "<html><b>Favorites</b><br><br>Showing all favorited songs.</html>");
 
     if (favoriteSongs.isEmpty()) {
       updateStatus("No favorited songs found.", null);
@@ -380,10 +344,6 @@ public class App {
     contentCardLayout.show(contentPanel, "LIBRARY");
     refreshSongList(matches);
     songList.setSelectedIndex(0);
-    homeLabel.setText(
-      "<html><b>Search Results</b><br><br>Found "
-        + matches.size()
-        + " matching song(s).</html>");
     updateStatus("Search results updated.", null);
   }
 
@@ -782,32 +742,7 @@ public class App {
   }
 
   public static void updateStatus(String message, Song song) {
-    if (statusLabel == null) {
-      return;
-    }
-
-    StringBuilder labelBuilder = new StringBuilder();
-    labelBuilder.append("<html><b>Status:</b> ").append(escapeHtml(message));
-
-    if (song != null) {
-      labelBuilder
-        .append("<br><br><b>Title:</b> ").append(escapeHtml(song.title()))
-        .append("<br><b>Artist:</b> ").append(escapeHtml(song.artist()))
-        .append("<br><b>Year:</b> ").append(song.year())
-        .append("<br><b>Genre:</b> ").append(escapeHtml(song.genre()))
-        .append("<br><b>Is Favorite:</b> ").append(song.isFavorite())
-        .append("<br><b>File Path:</b> ").append(escapeHtml(song.filePath()));
-    }
-
-    labelBuilder.append("</html>");
-    final String labelText = labelBuilder.toString();
-
-    if (SwingUtilities.isEventDispatchThread()) {
-      statusLabel.setText(labelText);
-      return;
-    }
-
-    SwingUtilities.invokeLater(() -> statusLabel.setText(labelText));
+    // No status panel is shown in the current UI layout.
   }
 
   public static String formatSong(Song song) {
